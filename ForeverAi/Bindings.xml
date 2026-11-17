@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="FOREVERAI_TOGGLE" header="FOREVERAI" category="ADDONS">
+		ForeverAi_Toggle()
+	</Binding>
+</Bindings>

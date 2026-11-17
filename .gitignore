@@ -1,0 +1,9 @@
+gemini_key.txt
+config.json
+*.log
+chats.jsonl
+__pycache__/
+build/
+dist/
+*.spec
+WTF/

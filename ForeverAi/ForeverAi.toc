@@ -1,0 +1,24 @@
+## Interface: 16001
+## Title: ForeverAi
+## Notes: Ask anything about WoW Forever - quests, NPCs, drops, prices, leveling, dungeons, attunements. Type /fai
+## Author: ForeverAi
+## Version: 0.1.0
+## SavedVariables: ForeverAiDB
+## OptionalDeps: Questie, QuestieDB, RXPGuides, Auctionator, TomTom
+
+Core.lua
+Text.lua
+Knowledge\Zones.lua
+Knowledge\Dungeons.lua
+Knowledge\KB.lua
+Knowledge\KB_Forever.lua
+Knowledge\KB_Fixes.lua
+Knowledge\ForeverQuests.lua
+Knowledge\Gathering.lua
+Knowledge\ForeverChains.lua
+Data.lua
+Learn.lua
+Engine.lua
+Composer.lua
+Progress.lua
+UI.lua
