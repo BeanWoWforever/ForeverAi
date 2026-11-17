@@ -17,8 +17,13 @@ Works with Questie, RestedXP, Auctionator and TomTom when you have them.
 
 ## Install the addon
 
-Download `ForeverAi-addon.zip` from [Releases](../../releases) (or CurseForge) and unzip it into
-`World of Warcraft\_forever_\Interface\AddOns\`. Restart WoW, then type `/fai`.
+**Easiest:** install ForeverAi with the CurseForge app. It also installs **QuestieDB** for you, the free quest database
+ForeverAi reads (just the data: no map icons, no tracker; Questie itself is optional).
+
+**By hand:** download `ForeverAi-addon.zip` from [Releases](../../releases), unzip it into
+`World of Warcraft\_forever_\Interface\AddOns\`, and also install **QuestieDB** (Forever version) from CurseForge.
+Without QuestieDB everything still works except quest chains, routes, NPC locations and lost progress, and ForeverAi
+tells you so. Restart WoW, then type `/fai`.
 
 The addon works fully on its own. Everything below is optional.
 

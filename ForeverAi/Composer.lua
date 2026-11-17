@@ -698,6 +698,13 @@ end
 
 local function qname(id) return D:Get("quest", id, "name") or ("Quest " .. id) end
 
+-- shown instead of a quest answer when the quest database addon isn't installed
+function C:NeedDB()
+    return { c("warn", "Quest chains, routes and NPC locations need QuestieDB (free)."),
+        c("dim", "It installs automatically with ForeverAi from the CurseForge app. Installed by hand? Get 'QuestieDB' (Forever version) from CurseForge, then restart WoW."),
+        c("dim", "You don't need Questie itself - just QuestieDB.") }
+end
+
 function C:Checklist(target, ctx)
     if FAI.Engine.Focus then FAI.Engine:Focus(target) end
     local steps = self:Prereqs(target)
@@ -808,6 +815,7 @@ table.insert(C.intents, 1, {
                 if id then return C:Checklist(id, ctx) end
                 local fq = D.fcByName[T.norm(name)]
                 if fq then return C:ForeverChainLines(fq) end
+                if not D:Has() then return C:NeedDB() end
                 return nil
             end
         end
@@ -894,6 +902,7 @@ table.insert(C.intents, 1, {
         for _, w in ipairs(ROUTE_WORDS) do if q:find(w, 1, true) then return FAI.Engine:Focus() ~= nil end end
     end,
     run = function(q)
+        if not D:Has() then return C:NeedDB() end
         local id = FAI.Engine:Focus()
         if not id then return nil end
         if q == "pin route" or q:find("^pin") or q:find("waypoints? on") or q:find("set waypoint") then

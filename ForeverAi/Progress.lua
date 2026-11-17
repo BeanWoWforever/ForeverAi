@@ -106,6 +106,7 @@ function P:Missed(force)
 end
 
 function P:MissedLines(ctx)
+    if not D:Has() then return C:NeedDB() end
     local list = self:Missed(true)
     local level = (ctx and ctx.level) or 1
     local out = { c("gold", "Follow-up quests you never picked up") .. c("dim", (" (%d)"):format(#list)) }
@@ -186,6 +187,7 @@ end
 
 ---------------------------------------------------------------- "have i done X"
 function P:DoneLines(name)
+    if not D:Has() then return C:NeedDB() end
     local id = C.findQuestId and C.findQuestId(name)
     if not id then return nil end
     if C:IsDone(id) then return { c("ok", "Yes") .. " - you've completed " .. c("quest", qname(id)) .. " on this character.",
