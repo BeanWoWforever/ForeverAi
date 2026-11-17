@@ -22,7 +22,7 @@ import webbrowser
 
 import foreverai_companion as core
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 APP_NAME = "ForeverAi Companion"
 EXE_NAME = "ForeverAiCompanion.exe"
 REPO_URL = "https://github.com/OWNER/ForeverAi"   # filled in by the release build

@@ -603,7 +603,8 @@ local intents = {
             end
         end },
     { -- quest log
-        test = function(q) return q:find("my quests") or q:find("quest log") or q:find("what quests do i have") end,
+        test = function(q) return q:find("my quests") or q:find("quest log") or q:find("what quests do i have") or q:find("in my log")
+            or q:find("what quest am i") or q:find("quest im doing") or q:find("quest i'm doing") or q:find("what am i doing") end,
         run = function() return questLog() end },
     { -- where to level
         skipForProfession = true,
@@ -734,7 +735,8 @@ function E:Answer(raw)
     end
 
     -- a quest named in a "help me with it" question: your checklist, straight away
-    local HELPW = { "missing", "need", "help", "how", "stuck", "chain", "next", "finish", "get", "do ", "start", "doing", "where" }
+    local HELPW = { "missing", "need", "help", "how", "stuck", "chain", "next", "finish", "get", "do ", "start", "doing", "where",
+        "step", "far", "progress", "on the", "am i", "left", "remaining", "done" }
     local named = self:FindQuestInText(q)
     if named and FAI.Composer and FAI.Composer.Checklist then
         local helpy = false
@@ -744,6 +746,15 @@ function E:Answer(raw)
             local ok, lines = pcall(FAI.Composer.Checklist, FAI.Composer, named, ctx)
             if ok and lines then E.lastKind = "kb"; return lines end
         end
+    end
+
+    -- follow-ups about the quest this conversation is on ("what step am i on", "where am i at", "whats left")
+    local focus = (not named) and self:Focus()
+    if focus and FAI.Composer and (q:find("what step") or q:find("where am i") or q:find("whats left") or q:find("what is left")
+        or q:find("how far") or q:find("what do i do now") or q:find("whats next") or q:find("what next") or q:find("next step")
+        or q:find("am i on") or q:find("checklist") or q:find("progress")) then
+        local ok, lines = pcall(FAI.Composer.Checklist, FAI.Composer, focus, ctx)
+        if ok and lines then E.lastKind = "kb"; return lines end
     end
 
     -- a near-exact knowledge-base hit beats the generic intents below

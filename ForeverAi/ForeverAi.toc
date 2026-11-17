@@ -2,7 +2,7 @@
 ## Title: ForeverAi
 ## Notes: Ask anything about WoW Forever - quests, NPCs, drops, prices, leveling, dungeons, attunements. Type /fai
 ## Author: ForeverAi
-## Version: 0.1.0
+## Version: 1.0.1
 ## SavedVariables: ForeverAiDB
 ## OptionalDeps: Questie, QuestieDB, RXPGuides, Auctionator, TomTom
 

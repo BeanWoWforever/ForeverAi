@@ -403,7 +403,33 @@ function C:QuestState(id)
         local ok, doable = pcall(q.IsDoable, id)
         if ok then return doable and "avail" or "locked" end
     end
+    -- no Questie module: judge it from the database ourselves
+    if D:Get("quest", id, "name") then return self:Available(id) and "avail" or "locked" end
     return "unknown"
+end
+
+-- prerequisites done, level reached, right race/class, not locked out by a quest you chose instead
+function C:Available(id)
+    local function L(v) return type(v) == "table" and v or {} end
+    for _, p in ipairs(L(D:Get("quest", id, "preQuestGroup"))) do if not self:IsDone(p) then return false end end
+    local single = L(D:Get("quest", id, "preQuestSingle"))
+    if #single > 0 then
+        local any = false
+        for _, p in ipairs(single) do if self:IsDone(p) then any = true break end end
+        if not any then return false end
+    end
+    for _, x in ipairs(L(D:Get("quest", id, "exclusiveTo"))) do if self:IsDone(x) then return false end end
+    local level = (UnitLevel and UnitLevel("player")) or 1
+    if (D:Get("quest", id, "requiredLevel") or 0) > level then return false end
+    local function bitOk(mask, idx)
+        if type(mask) ~= "number" or mask == 0 or not idx or idx < 1 or idx > 24 then return true end
+        return math.floor(mask / 2 ^ (idx - 1)) % 2 == 1
+    end
+    local raceId = UnitRace and select(3, UnitRace("player"))
+    local classId = UnitClass and select(3, UnitClass("player"))
+    if not bitOk(D:Get("quest", id, "requiredRaces"), raceId) then return false end
+    if not bitOk(D:Get("quest", id, "requiredClasses"), classId) then return false end
+    return true
 end
 
 local function firstOf(t) return type(t) == "table" and t[1] or nil end
@@ -704,6 +730,12 @@ function C:Checklist(target, ctx)
         rows[#rows + 1] = line
     end
     local out = { c("gold", qname(target) .. " - unlock checklist") .. c("dim", (" (%d of %d done)"):format(done, #steps)) }
+    if nextStep then
+        local pos
+        for k, st in ipairs(steps) do if st.id == nextStep then pos = k end end
+        out[#out + 1] = c("ok", ("You're on step %d of %d: %s"):format(pos or 0, #steps, qname(nextStep)))
+            .. c("dim", self:QuestState(nextStep) == "log" and " (in your log)" or " (ready to pick up)")
+    end
     if self:IsDone(target) then out[#out + 1] = c("ok", "  You've already completed " .. qname(target) .. ".") end
     for _, r in ipairs(rows) do out[#out + 1] = r end
     -- what to do right now
@@ -814,15 +846,28 @@ function C:RouteStops(target)
 end
 
 function C:RouteLines(target)
-    local stops = self:RouteStops(target)
-    local out = { c("gold", "Route for " .. qname(target)) .. c("dim", " - every stop you have left, in order") }
-    local n = 0
-    for _, s in ipairs(stops) do
-        if s.note then
-            out[#out + 1] = "      " .. c("dim", s.note:sub(1, 160))
-        else
+    local out = { c("gold", "Route for " .. qname(target)) .. c("dim", " - what's left, in order") }
+    local lastSpot, n = nil, 0
+    local function spot(npc)
+        if not npc then return nil end
+        local z, x, y = D:NpcSpot(npc)
+        local who = D:Get("npc", npc, "name") or "?"
+        return { key = npc, text = c("npc", who) .. (z and (" - " .. D:Where(z, x, y) .. D:Pin(z, x, y, who)) or "") }
+    end
+    for _, st in ipairs(self:Prereqs(target)) do
+        local id = st.id
+        if not self:IsDone(id) then
             n = n + 1
-            out[#out + 1] = ("  %d. %s %s: %s - %s%s"):format(n, s.what, c("quest", qname(s.q)), c("npc", s.who), D:Where(s.z, s.x, s.y), D:Pin(s.z, s.x, s.y, s.who))
+            local inLog = self:QuestState(id) == "log"
+            out[#out + 1] = ("  %d. %s%s"):format(n, c("quest", qname(id)), inLog and c("ffff00", " (in your log)") or "")
+            if not inLog then
+                local g = spot(firstOf(listOf(D:Get("quest", id, "startedBy"))[1]))
+                if g then out[#out + 1] = "      get it: " .. (lastSpot == g.key and c("dim", "same NPC") or g.text); lastSpot = g.key end
+            end
+            local obj = listOf(D:Get("quest", id, "objectivesText"))[1]
+            if obj and obj ~= "" then out[#out + 1] = "      do: " .. c("dim", obj:sub(1, 150)) end
+            local f = spot(firstOf(listOf(D:Get("quest", id, "finishedBy"))[1]))
+            if f then out[#out + 1] = "      turn in: " .. (lastSpot == f.key and c("dim", "same NPC") or f.text); lastSpot = f.key end
         end
     end
     if n == 0 then out[#out + 1] = c("ok", "  Nothing left - you've done every step.") return out end
